@@ -4,7 +4,7 @@ from typing import Literal
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-
+import json 
 from src.rag.retrieval.retriever import retrieve, RetrievedChunk
 from src.rag.synthesis.answer import synthesize_answer
 from src.rag.aws.bedrock import HAIKU, SONNET
@@ -12,6 +12,14 @@ from src.rag.aws.bedrock import HAIKU, SONNET
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger(__name__)
+from fastapi.responses import StreamingResponse
+from src.rag.agent.graph import agent_graph
+from src.rag.aws.bedrock import claude_stream
+from src.rag.agent.nodes import SYNTH_SYSTEM
+
+
+
+
 
 
 app = FastAPI(
@@ -57,7 +65,54 @@ class AskResponse(BaseModel):
 def health():
     return {"status": "ok"}
 
-
+@app.post("/ask/stream")
+def ask_stream(request: AskRequest):
+    """
+    Stream the response. Returns SSE.
+    
+    Flow:
+    1. Run the graph up to (but not including) synthesizer
+    2. If we hit an apology node, stream the static text
+    3. Otherwise, stream synthesis from Claude
+    """
+    def event_stream():
+        # Run pre-synthesis flow synchronously (it's fast)
+        state = agent_graph.invoke(
+            {"question": request.question},
+            config={"configurable": {"skip_synth": True}},
+        )
+        
+        # First: emit metadata (sources) as a JSON event
+        sources_payload = json.dumps({
+            "type": "sources",
+            "sources": [
+                {"filename": c["filename"], "page_num": c["page_num"],
+                 "score": round(c["rrf_score"], 4)}
+                for c in state.get("chunks", [])
+            ],
+            "trace": state.get("trace", []),
+        })
+        yield f"event: metadata\ndata: {sources_payload}\n\n"
+        
+        # Then: stream the answer
+        if state.get("answer"):
+            # Apology path — just yield the static text
+            yield f"event: token\ndata: {json.dumps({'text': state['answer']})}\n\n"
+        else:
+            # Synthesis path — actually stream from Claude
+            chunks = state["chunks"]
+            context = "\n---\n".join(
+                f"[source_{i+1}] ({c['filename']}, p{c['page_num']})\n{c['content']}"
+                for i, c in enumerate(chunks)
+            )
+            prompt = f"CONTEXT PASSAGES:\n{context}\n\nQUESTION: {request.question}\n\nAnswer:"
+            
+            for token in claude_stream(prompt, system=SYNTH_SYSTEM):
+                yield f"event: token\ndata: {json.dumps({'text': token})}\n\n"
+        
+        yield "event: done\ndata: {}\n\n"
+    
+    return StreamingResponse(event_stream(), media_type="text/event-stream")
 @app.post("/ask", response_model=AskResponse)
 def ask(request: AskRequest):
     log.info(f"Question: {request.question!r}  top_k={request.top_k}  model={request.model}")

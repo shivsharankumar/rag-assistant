@@ -12,6 +12,103 @@ HAIKU = "minimax.minimax-m2.5"
 SONNET = "openai.gpt-oss-20b-1:0"
 
 
+from typing import Iterator
+import re
+
+# Add this helper near the top
+_REASONING_RE = re.compile(r"<reasoning>.*?</reasoning>\s*", re.DOTALL | re.IGNORECASE)
+
+def _strip_reasoning(text: str) -> str:
+    """Remove <reasoning>...</reasoning> blocks that Claude sometimes emits."""
+    return _REASONING_RE.sub("", text).strip()
+# def claude_stream(
+#     prompt: str,
+#     system: str = "",
+#     model_id: str = HAIKU,
+#     max_tokens: int = 1024,
+#     temperature: float = 0.0,
+# ) -> Iterator[str]:
+#     """
+#     Stream Claude response chunks via Bedrock invoke_model_with_response_stream.
+#     Yields text deltas as they arrive.
+#     """
+#     client = get_bedrock_runtime()
+#     body = json.dumps({
+#         "anthropic_version": "bedrock-2023-05-31",
+#         "max_tokens": max_tokens,
+#         "temperature": temperature,
+#         "system": system,
+#         "messages": [{"role": "user", "content": prompt}],
+#     })
+    
+#     response = client.invoke_model_with_response_stream(
+#         modelId=model_id, body=body,
+#         contentType="application/json", accept="application/json",
+#     )
+    
+#     for event in response["body"]:
+#         chunk = json.loads(event["chunk"]["bytes"])
+#         if chunk.get("type") == "content_block_delta":
+#             delta = chunk.get("delta", {})
+#             if delta.get("type") == "text_delta":
+#                 yield delta.get("text", "")
+
+def claude_stream(prompt, system="", model_id=HAIKU, max_tokens=1024, temperature=0.0):
+    client = get_bedrock_runtime()
+    body = json.dumps({
+        "anthropic_version": "bedrock-2023-05-31",
+        "max_tokens": max_tokens,
+        "temperature": temperature,
+        "system": system,
+        "messages": [{"role": "user", "content": prompt}],
+    })
+    response = client.invoke_model_with_response_stream(
+        modelId=model_id, body=body,
+        contentType="application/json", accept="application/json",
+    )
+    
+    in_reasoning = False
+    buffer = ""
+    
+    for event in response["body"]:
+        chunk = json.loads(event["chunk"]["bytes"])
+        if chunk.get("type") == "content_block_delta":
+            delta = chunk.get("delta", {})
+            if delta.get("type") == "text_delta":
+                text = delta.get("text", "")
+                buffer += text
+                
+                # State machine: skip everything inside <reasoning>...</reasoning>
+                output = ""
+                while buffer:
+                    if not in_reasoning:
+                        idx = buffer.find("<reasoning>")
+                        if idx == -1:
+                            # Might be mid-tag, hold back last 11 chars
+                            if len(buffer) > 11:
+                                output += buffer[:-11]
+                                buffer = buffer[-11:]
+                            break
+                        else:
+                            output += buffer[:idx]
+                            buffer = buffer[idx + len("<reasoning>"):]
+                            in_reasoning = True
+                    else:
+                        end_idx = buffer.find("</reasoning>")
+                        if end_idx == -1:
+                            buffer = ""  # discard, waiting for end tag
+                            break
+                        else:
+                            buffer = buffer[end_idx + len("</reasoning>"):]
+                            in_reasoning = False
+                
+                if output:
+                    yield output
+    
+    # Flush remaining buffer
+    if buffer and not in_reasoning:
+        yield buffer
+
 # def claude_invoke(
 #     prompt: str,
 #     system: str = "",
@@ -81,7 +178,9 @@ def claude_invoke(
 
     result = json.loads(response["body"].read())
     # OpenAI-style response format
-    return result["choices"][0]["message"]["content"]
+    raw_text=result["choices"][0]["message"]["content"]
+    return _strip_reasoning(raw_text)
+
 @lru_cache(maxsize=1)
 def get_bedrock_runtime():
     """

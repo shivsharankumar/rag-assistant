@@ -9,6 +9,7 @@ dependencies = [
     "dotenv>=0.9.9",
     "fastapi>=0.136.1",
     "langchain-text-splitters>=1.1.2",
+    "langgraph>=1.2.0",
     "langsmith>=0.8.3",
     "psycopg>=3.3.4",
     "psycopg-binary>=3.3.4",

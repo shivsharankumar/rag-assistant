@@ -1,5 +1,10 @@
-{"question": "What is multi-head attention?", "expected_source": "1706.03762v7.pdf"}
-{"question": "How does BERT use bidirectional context?", "expected_source": "1810.04805v2.pdf"}
-{"question": "What problem does RAG solve compared to fine-tuning?", "expected_source": "2005.11401v4.pdf"}
-{"question": "Why do LLMs perform worse on information in the middle of long contexts?", "expected_source": "2307.03172v3.pdf"}
-{"question": "What metrics does RAGAS use to evaluate RAG systems?", "expected_source": "2309.15217v2.pdf"}
+{"question": "What is multi-head attention?", "expected_source": "1706.03762v7.pdf", "type": "factual"}
+{"question": "How does BERT use bidirectional context?", "expected_source": "1810.04805v2.pdf", "type": "factual"}
+{"question": "What problem does RAG solve compared to fine-tuning?", "expected_source": "2005.11401v4.pdf", "type": "factual"}
+{"question": "Why do LLMs perform worse on info in the middle of long contexts?", "expected_source": "2307.03172v3.pdf", "type": "factual"}
+{"question": "What metrics does RAGAS use to evaluate RAG?", "expected_source": "2309.15217v2.pdf", "type": "factual"}
+{"question": "Compare BERT and the original Transformer architecture", "expected_source": "1810.04805v2.pdf", "type": "comparison"}
+{"question": "How is RAG evaluated and what are the key metrics?", "expected_source": "2309.15217v2.pdf", "type": "summary"}
+{"question": "Tell me a joke about cats", "expected_source": null, "type": "out_of_scope"}
+{"question": "What's the weather today?", "expected_source": null, "type": "out_of_scope"}
+{"question": "How do I bake bread?", "expected_source": null, "type": "out_of_scope"}
