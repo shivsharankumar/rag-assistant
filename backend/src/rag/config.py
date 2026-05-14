@@ -17,7 +17,10 @@ class Settings(BaseSettings):
     aws_region: str = "us-east-1"
     
     # LangSmith (Week 2)
-    langsmith_api_key: str = ""
+    llangsmith_api_key: str = ""
+    langsmith_tracing: bool = False
+    langsmith_project: str = "rag-assistant-dev"
+    langsmith_endpoint: str = "https://api.smith.langchain.com"
 
 
 settings = Settings()

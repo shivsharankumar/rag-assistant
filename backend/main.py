@@ -1,3 +1,5 @@
+from dotenv import load_dotenv
+load_dotenv()  # at the very top
 def main():
     print("Hello from backend!")
 
