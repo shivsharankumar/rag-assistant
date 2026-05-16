@@ -1,0 +1,104 @@
+WARNING:src.rag.retrieval.reranker:No JSON found in reranker response: 
+WARNING:src.rag.retrieval.reranker:No JSON found in reranker response: 
+
+======================================================================
+Configuration: BASELINE (no reranker)
+======================================================================
+  [1/5] What is multi-head attention?...
+      F=0.50  R=1.00  P=0.50
+  [2/5] How does BERT use bidirectional context?...
+      F=0.50  R=1.00  P=0.50
+  [3/5] What problem does RAG solve compared to fine-tuning?...
+      F=0.50  R=0.50  P=0.00
+  [4/5] Why do LLMs perform worse on info in the middle of long cont...
+      F=0.50  R=1.00  P=1.00
+  [5/5] What metrics does RAGAS use?...
+      F=0.50  R=1.00  P=0.50
+
+  AVG  Faithfulness: 0.500
+  AVG  Answer Relevance: 0.900
+  AVG  Context Precision: 0.500
+
+======================================================================
+Configuration: WITH RERANKER
+======================================================================
+  [1/5] What is multi-head attention?...
+      F=0.50  R=1.00  P=0.50
+  [2/5] How does BERT use bidirectional context?...
+      F=0.50  R=1.00  P=0.50
+  [3/5] What problem does RAG solve compared to fine-tuning?...
+Traceback (most recent call last):
+  File "/Users/shivsharankumar/Documents/rag-assistant/backend/eval/run_full_eval.py", line 91, in <module>
+    main()
+  File "/Users/shivsharankumar/Documents/rag-assistant/backend/eval/run_full_eval.py", line 79, in main
+    reranked = evaluate_config(dataset, use_reranker=True, label="WITH RERANKER")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shivsharankumar/Documents/rag-assistant/backend/eval/run_full_eval.py", line 52, in evaluate_config
+    answer, chunks = run_pipeline(q, use_reranker=use_reranker)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shivsharankumar/Documents/rag-assistant/backend/eval/run_full_eval.py", line 33, in run_pipeline
+    chunks = rerank(question, candidates, top_k=5)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shivsharankumar/Documents/rag-assistant/backend/src/rag/retrieval/reranker.py", line 79, in rerank
+    response = claude_invoke(
+               ^^^^^^^^^^^^^^
+  File "/Users/shivsharankumar/Documents/rag-assistant/backend/src/rag/aws/bedrock.py", line 172, in claude_invoke
+    response = client.invoke_model(
+               ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shivsharankumar/Documents/rag-assistant/backend/.venv/lib/python3.12/site-packages/botocore/client.py", line 606, in _api_call
+    return self._make_api_call(operation_name, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shivsharankumar/Documents/rag-assistant/backend/.venv/lib/python3.12/site-packages/botocore/context.py", line 123, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shivsharankumar/Documents/rag-assistant/backend/.venv/lib/python3.12/site-packages/botocore/client.py", line 1076, in _make_api_call
+    http, parsed_response = self._make_request(
+                            ^^^^^^^^^^^^^^^^^^^
+  File "/Users/shivsharankumar/Documents/rag-assistant/backend/.venv/lib/python3.12/site-packages/botocore/client.py", line 1100, in _make_request
+    return self._endpoint.make_request(operation_model, request_dict)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shivsharankumar/Documents/rag-assistant/backend/.venv/lib/python3.12/site-packages/botocore/endpoint.py", line 119, in make_request
+    return self._send_request(request_dict, operation_model)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shivsharankumar/Documents/rag-assistant/backend/.venv/lib/python3.12/site-packages/botocore/endpoint.py", line 197, in _send_request
+    success_response, exception = self._get_response(
+                                  ^^^^^^^^^^^^^^^^^^^
+  File "/Users/shivsharankumar/Documents/rag-assistant/backend/.venv/lib/python3.12/site-packages/botocore/endpoint.py", line 239, in _get_response
+    success_response, exception = self._do_get_response(
+                                  ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shivsharankumar/Documents/rag-assistant/backend/.venv/lib/python3.12/site-packages/botocore/endpoint.py", line 279, in _do_get_response
+    http_response = self._send(request)
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/Users/shivsharankumar/Documents/rag-assistant/backend/.venv/lib/python3.12/site-packages/botocore/endpoint.py", line 383, in _send
+    return self.http_session.send(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shivsharankumar/Documents/rag-assistant/backend/.venv/lib/python3.12/site-packages/botocore/httpsession.py", line 477, in send
+    urllib_response = conn.urlopen(
+                      ^^^^^^^^^^^^^
+  File "/Users/shivsharankumar/Documents/rag-assistant/backend/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 788, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "/Users/shivsharankumar/Documents/rag-assistant/backend/.venv/lib/python3.12/site-packages/urllib3/connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "/Users/shivsharankumar/Documents/rag-assistant/backend/.venv/lib/python3.12/site-packages/urllib3/connection.py", line 571, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shivsharankumar/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/http/client.py", line 1430, in getresponse
+    response.begin()
+  File "/Users/shivsharankumar/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/http/client.py", line 331, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "/Users/shivsharankumar/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/http/client.py", line 292, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shivsharankumar/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/socket.py", line 720, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shivsharankumar/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/ssl.py", line 1251, in recv_into
+    return self.read(nbytes, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/shivsharankumar/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/ssl.py", line 1103, in read
+    return self._sslobj.read(len, buffer)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt

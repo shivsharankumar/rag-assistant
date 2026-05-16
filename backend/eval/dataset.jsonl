@@ -1,10 +1,8 @@
-{"question": "What is multi-head attention?", "expected_source": "1706.03762v7.pdf", "type": "factual"}
-{"question": "How does BERT use bidirectional context?", "expected_source": "1810.04805v2.pdf", "type": "factual"}
-{"question": "What problem does RAG solve compared to fine-tuning?", "expected_source": "2005.11401v4.pdf", "type": "factual"}
-{"question": "Why do LLMs perform worse on info in the middle of long contexts?", "expected_source": "2307.03172v3.pdf", "type": "factual"}
-{"question": "What metrics does RAGAS use to evaluate RAG?", "expected_source": "2309.15217v2.pdf", "type": "factual"}
-{"question": "Compare BERT and the original Transformer architecture", "expected_source": "1810.04805v2.pdf", "type": "comparison"}
-{"question": "How is RAG evaluated and what are the key metrics?", "expected_source": "2309.15217v2.pdf", "type": "summary"}
-{"question": "Tell me a joke about cats", "expected_source": null, "type": "out_of_scope"}
-{"question": "What's the weather today?", "expected_source": null, "type": "out_of_scope"}
-{"question": "How do I bake bread?", "expected_source": null, "type": "out_of_scope"}
+{"question": "What is multi-head attention?", "ground_truth": "Multi-head attention runs multiple attention mechanisms in parallel, each with different learned projections of queries, keys, and values, allowing the model to attend to different representation subspaces simultaneously.", "expected_source": "1706.03762v7.pdf", "type": "factual"}
+{"question": "How does BERT use bidirectional context?", "ground_truth": "BERT pretrains on a masked language modeling objective where random tokens are masked and the model predicts them using both left and right context simultaneously, unlike unidirectional language models.", "expected_source": "1810.04805v2.pdf", "type": "factual"}
+{"question": "What problem does RAG solve compared to fine-tuning?", "ground_truth": "RAG combines parametric memory (the LLM) with non-parametric memory (a retrieval index) to provide knowledge-grounded outputs, allowing fact updates without retraining and reducing hallucinations.", "expected_source": "2005.11401v4.pdf", "type": "factual"}
+{"question": "Why do LLMs perform worse on info in the middle of long contexts?", "ground_truth": "Models show a U-shaped performance curve where information at the beginning and end of the context is used more reliably than information in the middle, suggesting attention biases.", "expected_source": "2307.03172v3.pdf", "type": "factual"}
+{"question": "What metrics does RAGAS use?", "ground_truth": "RAGAS evaluates RAG systems on faithfulness, answer relevance, context relevance, and other dimensions, using LLM-based judgment without requiring human-labeled ground truth.", "expected_source": "2309.15217v2.pdf", "type": "factual"}
+{"question": "Tell me a joke about cats", "ground_truth": null, "expected_source": null, "type": "out_of_scope"}
+{"question": "What's the weather today?", "ground_truth": null, "expected_source": null, "type": "out_of_scope"}
+{"question": "What is the boiling point of water?", "ground_truth": null, "expected_source": null, "type": "out_of_scope"}

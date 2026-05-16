@@ -36,15 +36,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-# ---- Request/response schemas ----
-
-class AskRequest(BaseModel):
-    question: str = Field(..., min_length=3, max_length=1000)
-    top_k: int = Field(default=5, ge=1, le=20)
-    model: Literal["haiku", "sonnet"] = "haiku"
-
-
 class Source(BaseModel):
     chunk_id: int
     filename: str
@@ -52,12 +43,29 @@ class Source(BaseModel):
     score: float
     preview: str  # first 200 chars
 
+class AskRequest(BaseModel):
+    question: str = Field(..., min_length=3, max_length=1000)
+    top_k: int = Field(default=5, ge=1, le=20)
+    model: Literal["haiku", "sonnet"] = "haiku"
+    use_critic: bool = False
 
 class AskResponse(BaseModel):
     answer: str
     sources: list[Source]
     model_used: str
 
+class CriticInfo(BaseModel):
+    score: float
+    reasoning: str
+    unsupported_claims: list[str]
+
+
+class AskResponse(BaseModel):
+    answer: str
+    sources: list[Source]
+    model_used: str
+    critic: CriticInfo | None = None
+    trace: list[str] = []
 
 # ---- Routes ----
 
@@ -115,38 +123,34 @@ def ask_stream(request: AskRequest):
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 @app.post("/ask", response_model=AskResponse)
 def ask(request: AskRequest):
-    log.info(f"Question: {request.question!r}  top_k={request.top_k}  model={request.model}")
-    
-    try:
-        chunks = retrieve(request.question, top_k=request.top_k)
-    except Exception as e:
-        log.exception("Retrieval failed")
-        raise HTTPException(status_code=500, detail=f"Retrieval failed: {e}")
-    
-    if not chunks:
-        return AskResponse(
-            answer="No relevant content found in the knowledge base.",
-            sources=[],
-            model_used=request.model,
-        )
-    
-    model_id = HAIKU if request.model == "haiku" else SONNET
-    
-    try:
-        answer = synthesize_answer(request.question, chunks, model_id=model_id)
-    except Exception as e:
-        log.exception("Synthesis failed")
-        raise HTTPException(status_code=500, detail=f"Synthesis failed: {e}")
-    
+    # state = agent_graph.invoke({"question": request.question})
+    state = agent_graph.invoke({
+    "question": request.question,
+    "use_critic": request.use_critic,
+     })
     sources = [
         Source(
             chunk_id=c["chunk_id"],
             filename=c["filename"],
             page_num=c["page_num"],
-            score=c["score"],
+            score=c.get("rerank_score", c.get("rrf_score", 0)),
             preview=c["content"][:200],
         )
-        for c in chunks
+        for c in state.get("chunks", [])
     ]
     
-    return AskResponse(answer=answer, sources=sources, model_used=request.model)
+    critic_info = None
+    if "critic_score" in state:
+        critic_info = CriticInfo(
+            score=state["critic_score"],
+            reasoning=state["critic_reasoning"],
+            unsupported_claims=state["critic_unsupported_claims"],
+        )
+    
+    return AskResponse(
+        answer=state.get("answer", ""),
+        sources=sources,
+        model_used=request.model,
+        critic=critic_info,
+        trace=state.get("trace", []),
+    )

@@ -28,3 +28,7 @@ class AgentState(TypedDict, total=False):
     
     # For tracing / debugging
     trace: list[str]  # log of which nodes executed
+    use_critic: bool
+    critic_score: float          # 0-10
+    critic_reasoning: str        # explanation
+    critic_unsupported_claims: list[str]
